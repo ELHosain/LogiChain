@@ -1,4 +1,4 @@
-# LogiChain — Monorepo (Liquid Glass Edition)
+# LogiChain 
 
 Plateforme logistique événementielle. Design clair "liquid glass" inspiré iOS 2026.
 
