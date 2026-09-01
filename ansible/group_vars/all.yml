@@ -1,0 +1,15 @@
+# Non-secret configuration variables.
+app_repo: "https://github.com/ELHosain/LogiChain.git"
+app_branch: "main"
+app_dir: "/opt/logichain"
+node_env: "production"
+api_port: 3000
+deploy_user: "deploy"
+
+mongodb_db_name: "logichain"
+mongodb_app_user: "logichain_app"
+
+# Secrets (JWT_SECRET, mongodb_app_password, etc.) must live ONLY in
+# ansible/group_vars/vault.yml, encrypted with:
+#   ansible-vault create ansible/group_vars/vault.yml
+# Never commit an unencrypted vault.yml to git.

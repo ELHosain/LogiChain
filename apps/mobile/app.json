@@ -1,0 +1,51 @@
+{
+  "expo": {
+    "name": "LogiChain",
+    "slug": "logichain-mobile",
+    "version": "2.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#F5F8FC"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "fr.lamanu.logichain",
+      "infoPlist": {
+        "NSCameraUsageDescription": "LogiChain utilise la caméra pour scanner les QR codes des équipements.",
+        "NSLocationWhenInUseUsageDescription": "LogiChain utilise votre position pour géolocaliser les anomalies."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#EEF2F8"
+      },
+      "package": "fr.lamanu.logichain",
+      "permissions": [
+        "CAMERA",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "VIBRATE"
+      ]
+    },
+    "plugins": [
+      "expo-secure-store",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Autoriser LogiChain à accéder à la caméra."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Autoriser LogiChain à utiliser votre localisation."
+        }
+      ]
+    ]
+  }
+}

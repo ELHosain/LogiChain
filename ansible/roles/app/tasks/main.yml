@@ -1,0 +1,63 @@
+---
+# Role: app
+# Deploys the LogiChain API: clones/updates the repo, installs prod
+# dependencies, templates the .env from vaulted secrets, and runs
+# the process under PM2 with boot-persistence.
+
+- name: Ensure app directory exists and is owned by deploy user
+  ansible.builtin.file:
+    path: "{{ app_dir }}"
+    state: directory
+    owner: "{{ deploy_user }}"
+    group: "{{ deploy_user }}"
+    mode: '0755'
+
+- name: Clone or update LogiChain repository
+  ansible.builtin.git:
+    repo: "{{ app_repo }}"
+    dest: "{{ app_dir }}"
+    version: "{{ app_branch }}"
+    force: false
+  become_user: "{{ deploy_user }}"
+  notify: Restart logichain-api
+
+- name: Template production .env file (from vaulted secrets)
+  ansible.builtin.template:
+    src: env.j2
+    dest: "{{ app_dir }}/apps/api/.env"
+    owner: "{{ deploy_user }}"
+    group: "{{ deploy_user }}"
+    mode: '0600'
+  notify: Restart logichain-api
+
+- name: Install production dependencies
+  community.general.npm:
+    path: "{{ app_dir }}/apps/api"
+    production: true
+    ci: true
+  become_user: "{{ deploy_user }}"
+  notify: Restart logichain-api
+
+- name: Check if PM2 process already exists
+  ansible.builtin.command: pm2 describe logichain-api
+  register: pm2_status
+  changed_when: false
+  failed_when: false
+  become_user: "{{ deploy_user }}"
+
+- name: Start LogiChain API under PM2 (first run)
+  ansible.builtin.command: pm2 start src/server.js --name logichain-api
+  args:
+    chdir: "{{ app_dir }}/apps/api"
+  become_user: "{{ deploy_user }}"
+  when: pm2_status.rc != 0
+
+- name: Persist PM2 process list
+  ansible.builtin.command: pm2 save
+  become_user: "{{ deploy_user }}"
+  changed_when: false
+
+- name: Configure PM2 to start on boot
+  ansible.builtin.command: pm2 startup systemd -u {{ deploy_user }} --hp /home/{{ deploy_user }}
+  changed_when: false
+  ignore_errors: true # command prints a one-off script; safe to re-run

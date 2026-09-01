@@ -1,0 +1,79 @@
+name: LogiChain CI/CD
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  lint-and-test:
+    name: Lint & Test API
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: apps/api/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run lint
+        run: npm run lint --if-present
+
+      - name: Run tests
+        run: npm test
+        env:
+          JWT_SECRET: ci_test_secret_not_for_production
+          MONGODB_URI: mongodb://localhost:27017
+          DB_NAME: logichain_test
+
+  deploy:
+    name: Deploy to production
+    needs: lint-and-test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Ansible
+        run: pip install ansible pymongo
+
+      - name: Install required Ansible collections
+        run: |
+          ansible-galaxy collection install community.general
+          ansible-galaxy collection install community.mongodb
+          ansible-galaxy collection install ansible.posix
+
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_rsa_logichain
+          chmod 600 ~/.ssh/id_rsa_logichain
+          ssh-keyscan -H ${{ secrets.DEPLOY_SERVER_IP }} >> ~/.ssh/known_hosts
+
+      - name: Write vault password file
+        run: echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > /tmp/vault_pass.txt
+
+      - name: Run Ansible playbook
+        working-directory: ansible
+        run: |
+          ansible-playbook -i inventory.ini site.yml \
+            --vault-password-file /tmp/vault_pass.txt \
+            --limit production \
+            -e "ansible_host=${{ secrets.DEPLOY_SERVER_IP }}"
+
+      - name: Clean up secrets
+        if: always()
+        run: rm -f /tmp/vault_pass.txt ~/.ssh/id_rsa_logichain

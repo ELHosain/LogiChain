@@ -1,0 +1,10 @@
+# Copy this file to vault.yml and encrypt it before use:
+#   cp ansible/group_vars/vault.yml.example ansible/group_vars/vault.yml
+#   ansible-vault encrypt ansible/group_vars/vault.yml
+#
+# NEVER commit an unencrypted vault.yml. It is already listed
+# implicitly via .env-style secrets policy — keep it encrypted at all times.
+
+vault_jwt_secret: "REPLACE_WITH_STRONG_RANDOM_SECRET"
+vault_mongodb_app_password: "REPLACE_WITH_STRONG_PASSWORD"
+vault_mongodb_admin_password: "REPLACE_WITH_STRONG_PASSWORD"

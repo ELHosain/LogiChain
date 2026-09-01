@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>LogiChain — API</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#07111C;color:#F0F6FF;font-family:system-ui,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.card{background:#0C1A27;border:1px solid #162840;border-radius:16px;padding:40px;max-width:520px;text-align:center}
+.logo{width:64px;height:64px;border-radius:14px;background:linear-gradient(135deg,#0BBCD4,#1EECC8);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#07111C;margin:0 auto 20px}
+h1{font-size:26px;margin-bottom:8px}
+h1 span{color:#0BBCD4}
+.status{display:inline-flex;align-items:center;gap:8px;background:rgba(34,208,122,.12);color:#22D07A;border:1px solid rgba(34,208,122,.3);padding:6px 14px;border-radius:20px;font-size:13px;font-weight:600;margin:16px 0}
+.dot{width:8px;height:8px;border-radius:50%;background:#22D07A;box-shadow:0 0 8px #22D07A}
+p{color:#8BAFC8;font-size:14px;line-height:1.6;margin-top:12px}
+.eps{text-align:left;margin-top:24px;background:#0F2030;border-radius:10px;padding:16px}
+.ep{font-family:monospace;font-size:12px;color:#8BAFC8;padding:5px 0;border-bottom:1px solid #162840}
+.ep:last-child{border:0}
+.m{display:inline-block;min-width:52px;font-weight:700}
+.get{color:#5BB8D4}.post{color:#D4A04A}.patch{color:#4AD4A0}
+code{background:#162840;padding:2px 8px;border-radius:5px;color:#1EECC8;font-size:13px}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">LC</div>
+  <h1>Logi<span>Chain</span> API</h1>
+  <div class="status"><span class="dot"></span> API en ligne — v2.0</div>
+  <p>L'API REST fonctionne correctement.<br>Base URL : <code>/api/v1</code></p>
+  <div class="eps">
+    <div class="ep"><span class="m post">POST</span> /auth/login</div>
+    <div class="ep"><span class="m get">GET</span> /events</div>
+    <div class="ep"><span class="m get">GET</span> /events/:id/items</div>
+    <div class="ep"><span class="m patch">PATCH</span> /events/:id/items/:id/scan</div>
+    <div class="ep"><span class="m get">GET</span> /events/:id/dashboard</div>
+  </div>
+  <p style="margin-top:20px;font-size:12px">Testez l'API via l'app mobile Android ou Postman.</p>
+</div>
+</body>
+</html>

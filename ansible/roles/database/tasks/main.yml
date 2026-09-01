@@ -1,0 +1,96 @@
+---
+# Role: database
+# Installs MongoDB, binds it to localhost, creates the app user
+# with least-privilege access and the indexes LogiChain needs.
+
+- name: Import MongoDB public GPG key
+  ansible.builtin.apt_key:
+    url: https://www.mongodb.org/static/pgp/server-7.0.asc
+    state: present
+
+- name: Add MongoDB apt repository
+  ansible.builtin.apt_repository:
+    repo: "deb [arch=amd64] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse"
+    state: present
+    filename: mongodb-org-7.0
+
+- name: Install MongoDB
+  ansible.builtin.apt:
+    name: mongodb-org
+    state: present
+    update_cache: true
+
+- name: Ensure MongoDB binds to localhost only
+  ansible.builtin.lineinfile:
+    path: /etc/mongod.conf
+    regexp: '^  bindIp:'
+    line: '  bindIp: 127.0.0.1'
+  notify: Restart mongod
+
+- name: Ensure MongoDB auth is enabled
+  ansible.builtin.blockinfile:
+    path: /etc/mongod.conf
+    marker: "# {mark} ANSIBLE MANAGED SECURITY BLOCK"
+    block: |
+      security:
+        authorization: enabled
+  notify: Restart mongod
+
+- name: Start and enable mongod
+  ansible.builtin.systemd:
+    name: mongod
+    state: started
+    enabled: true
+
+- name: Wait for MongoDB to accept connections
+  ansible.builtin.wait_for:
+    port: 27017
+    host: 127.0.0.1
+    delay: 3
+    timeout: 30
+
+- name: Create MongoDB admin user (idempotent, root-authenticated once)
+  community.mongodb.mongodb_user:
+    login_port: 27017
+    database: admin
+    name: admin
+    password: "{{ vault_mongodb_admin_password }}"
+    roles:
+      - { db: admin, role: root }
+    state: present
+  register: mongo_admin_created
+  ignore_errors: true # fails harmlessly once auth is already enforced on re-runs
+
+- name: Create LogiChain application DB user (least privilege)
+  community.mongodb.mongodb_user:
+    login_user: admin
+    login_password: "{{ vault_mongodb_admin_password }}"
+    login_database: admin
+    database: "{{ mongodb_db_name }}"
+    name: "{{ mongodb_app_user }}"
+    password: "{{ vault_mongodb_app_password }}"
+    roles:
+      - { db: "{{ mongodb_db_name }}", role: readWrite }
+    state: present
+
+- name: Create index on events collection
+  community.mongodb.mongodb_index:
+    login_user: admin
+    login_password: "{{ vault_mongodb_admin_password }}"
+    login_database: admin
+    database: "{{ mongodb_db_name }}"
+    collection: events
+    keys:
+      createdAt: -1
+    name: idx_events_createdAt
+
+- name: Create index on items collection
+  community.mongodb.mongodb_index:
+    login_user: admin
+    login_password: "{{ vault_mongodb_admin_password }}"
+    login_database: admin
+    database: "{{ mongodb_db_name }}"
+    collection: items
+    keys:
+      eventId: 1
+    name: idx_items_eventId

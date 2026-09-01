@@ -1,0 +1,5 @@
+---
+- name: Restart logichain-api
+  ansible.builtin.command: pm2 restart logichain-api
+  become_user: "{{ deploy_user }}"
+  changed_when: true

@@ -1,0 +1,46 @@
+---
+# Role: webserver
+# Installs and configures Nginx as a reverse proxy to the Node API,
+# with optional Let's Encrypt SSL via certbot.
+
+- name: Install Nginx
+  ansible.builtin.apt:
+    name: nginx
+    state: present
+
+- name: Install certbot and nginx plugin
+  ansible.builtin.apt:
+    name:
+      - certbot
+      - python3-certbot-nginx
+    state: present
+
+- name: Deploy LogiChain Nginx site config
+  ansible.builtin.template:
+    src: logichain.conf.j2
+    dest: /etc/nginx/sites-available/logichain.conf
+    mode: '0644'
+  notify: Reload nginx
+
+- name: Enable LogiChain Nginx site
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/logichain.conf
+    dest: /etc/nginx/sites-enabled/logichain.conf
+    state: link
+  notify: Reload nginx
+
+- name: Remove default Nginx site
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: Reload nginx
+
+- name: Ensure Nginx is running and enabled
+  ansible.builtin.systemd:
+    name: nginx
+    state: started
+    enabled: true
+
+# SSL certificate issuance is intentionally left as a manual/CD-triggered
+# step (requires a real domain pointing at the server):
+#   certbot --nginx -d your-domain.example.com --non-interactive --agree-tos -m you@example.com

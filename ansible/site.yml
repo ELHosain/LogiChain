@@ -1,0 +1,19 @@
+---
+# Master playbook — provisions and deploys LogiChain end-to-end on a
+# blank Ubuntu server. Idempotent: safe to re-run any number of times.
+#
+# Usage:
+#   ansible-playbook -i inventory.ini site.yml --ask-vault-pass
+#
+- name: Provision and deploy LogiChain production server
+  hosts: production
+  become: true
+  vars_files:
+    - group_vars/all.yml
+    - group_vars/vault.yml
+
+  roles:
+    - system
+    - database
+    - webserver
+    - app
