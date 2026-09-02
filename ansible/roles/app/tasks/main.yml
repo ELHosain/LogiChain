@@ -14,7 +14,7 @@
 
 - name: Clone or update LogiChain repository
   ansible.builtin.git:
-    repo: "{{ app_repo }}"
+    repo: "https://{{ vault_github_pat }}@github.com/ELHosain/LogiChain.git"
     dest: "{{ app_dir }}"
     version: "{{ app_branch }}"
     force: false
