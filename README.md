@@ -1,4 +1,4 @@
-# LogiChain — Monorepo (Liquid Glass Edition)
+# LogiChain 
 
 Plateforme logistique événementielle. Design clair "liquid glass" inspiré iOS 2026.
 
@@ -6,7 +6,7 @@ Plateforme logistique événementielle. Design clair "liquid glass" inspiré iOS
 LogiChain/
 ├── apps/
 │   ├── api/        ← Back-end Node.js + Express + MongoDB
-│   └── mobile/     ← App React Native (Expo) — design glass clair
+│   └── mobile/     ← App React Native (Expo) 
 ├── package.json    ← scripts racine (npm run dev)
 └── README.md
 ```
@@ -57,16 +57,6 @@ npm run mobile       # Mobile seul (puis 'a' pour Android)
 | admin@logichain.fr | password123 | admin |
 | sophie@logichain.fr | password123 | responsable |
 | marc@logichain.fr | password123 | agent |
-
-## 🎨 Design "Liquid Glass"
-
-- **Thème clair** premium (fond gris-bleu doux, dégradés subtils)
-- **Cartes en verre dépoli** (expo-blur sur iOS, translucide sur Android)
-- **Tab bar flottante** en verre avec animation de l'onglet actif
-- **Icônes vectorielles** (react-native-svg, zéro emoji dans l'UI)
-- **Animations** : boutons qui scale au press, valeurs animées, skeleton loaders, feuilles de sheet fluides
-- **Composants réutilisables** : GlassCard, GlassButton, GlassInput, GlassTabBar, Badge, Avatar, Icon, AnimatedPressable, EmptyState, Skeleton
-- **Thème centralisé** : `apps/mobile/src/utils/theme.ts`
 
 ## 📦 Logo
 

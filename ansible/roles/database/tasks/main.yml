@@ -49,6 +49,16 @@
     delay: 3
     timeout: 30
 
+- name: Install python3-pip (required for pymongo 4+)
+  ansible.builtin.apt:
+    name: python3-pip
+    state: present
+
+- name: Install pymongo 4+ via pip on target host (required by community.mongodb modules)
+  ansible.builtin.pip:
+    name: pymongo>=4.0.0
+    state: present
+
 - name: Create MongoDB admin user (idempotent, root-authenticated once)
   community.mongodb.mongodb_user:
     login_port: 27017
@@ -63,6 +73,8 @@
 
 - name: Create LogiChain application DB user (least privilege)
   community.mongodb.mongodb_user:
+    login_host: localhost
+    login_port: 27017
     login_user: admin
     login_password: "{{ vault_mongodb_admin_password }}"
     login_database: admin
@@ -73,24 +85,34 @@
       - { db: "{{ mongodb_db_name }}", role: readWrite }
     state: present
 
-- name: Create index on events collection
-  community.mongodb.mongodb_index:
-    login_user: admin
-    login_password: "{{ vault_mongodb_admin_password }}"
-    login_database: admin
-    database: "{{ mongodb_db_name }}"
-    collection: events
-    keys:
-      createdAt: -1
-    name: idx_events_createdAt
+- name: Create index on events collection (createIndex is natively idempotent)
+  ansible.builtin.command:
+    argv:
+      - mongosh
+      - --quiet
+      - --username
+      - admin
+      - --password
+      - "{{ vault_mongodb_admin_password }}"
+      - --authenticationDatabase
+      - admin
+      - "{{ mongodb_db_name }}"
+      - --eval
+      - "db.events.createIndex({createdAt: -1}, {name: 'idx_events_createdAt'})"
+  changed_when: false
 
-- name: Create index on items collection
-  community.mongodb.mongodb_index:
-    login_user: admin
-    login_password: "{{ vault_mongodb_admin_password }}"
-    login_database: admin
-    database: "{{ mongodb_db_name }}"
-    collection: items
-    keys:
-      eventId: 1
-    name: idx_items_eventId
+- name: Create index on items collection (createIndex is natively idempotent)
+  ansible.builtin.command:
+    argv:
+      - mongosh
+      - --quiet
+      - --username
+      - admin
+      - --password
+      - "{{ vault_mongodb_admin_password }}"
+      - --authenticationDatabase
+      - admin
+      - "{{ mongodb_db_name }}"
+      - --eval
+      - "db.items.createIndex({eventId: 1}, {name: 'idx_items_eventId'})"
+  changed_when: false

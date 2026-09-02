@@ -21,6 +21,7 @@
       - software-properties-common
       - gnupg
       - ca-certificates
+      - acl
     state: present
 
 - name: Create non-root deploy user
@@ -35,9 +36,8 @@
   ansible.posix.authorized_key:
     user: "{{ deploy_user }}"
     state: present
-    key: "{{ lookup('file', lookup('env', 'HOME') + '/.ssh/id_rsa_logichain.pub') }}"
-  when: lookup('env', 'HOME') is defined
-  ignore_errors: true # skip gracefully if the local pubkey path isn't present in CI
+    key: "{{ lookup('file', lookup('env', 'HOME') + '/.ssh/logichain-key.pub') }}"
+  ignore_errors: true # skip gracefully if the local pubkey path isn't present
 
 - name: Disable SSH root login
   ansible.builtin.lineinfile:
@@ -89,6 +89,37 @@
     name: fail2ban
     state: started
     enabled: true
+
+- name: Allow HTTP in iptables (Oracle images REJECT before UFW chains)
+  ansible.builtin.iptables:
+    chain: INPUT
+    protocol: tcp
+    destination_port: '80'
+    ctstate: NEW
+    jump: ACCEPT
+    action: insert
+    rule_num: 5
+
+- name: Allow HTTPS in iptables (Oracle images REJECT before UFW chains)
+  ansible.builtin.iptables:
+    chain: INPUT
+    protocol: tcp
+    destination_port: '443'
+    ctstate: NEW
+    jump: ACCEPT
+    action: insert
+    rule_num: 5
+
+- name: Install iptables-persistent (non-interactive) to save rules across reboot
+  ansible.builtin.apt:
+    name: iptables-persistent
+    state: present
+  environment:
+    DEBIAN_FRONTEND: noninteractive
+
+- name: Persist iptables rules
+  ansible.builtin.shell: netfilter-persistent save
+  changed_when: false
 
 - name: Install Node.js LTS (NodeSource)
   ansible.builtin.shell: |
