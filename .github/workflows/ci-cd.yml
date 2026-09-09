@@ -59,8 +59,8 @@ jobs:
       - name: Set up SSH key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_rsa_logichain
-          chmod 600 ~/.ssh/id_rsa_logichain
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/logichain-key.key
+          chmod 600 ~/.ssh/logichain-key.key
           ssh-keyscan -H ${{ secrets.DEPLOY_SERVER_IP }} >> ~/.ssh/known_hosts
 
       - name: Write vault password file
